@@ -1,0 +1,42 @@
+{% include 'sitio/cabecera.html' %}
+
+<div class="container">
+    <h2 class="mt-4 mb-4">Resultados de la multiplicación de matrices</h2>
+    
+    <div class="table-responsive">
+      <table class="table table-bordered">
+        <thead class="thead-dark">
+          <tr>
+            <th>Tamaño de la Matriz</th>
+            <th>Tiempo (Matriz 2)</th>
+            <th>Tiempo (Matriz 3)</th>
+            <th>Tiempo (Matriz 4)</th>
+            <th>Tiempo (Matriz 5)</th>
+            <th>Tiempo (Matriz 6)</th>
+            <th>Tiempo (Matriz 7)</th>
+            <th>Tiempo (Matriz 8)</th>
+            <th>Tiempo (Matriz 9)</th>
+            <!-- Agrega más columnas para los otros tiempos si es necesario -->
+          </tr>
+        </thead>
+        <tbody>
+          {% for tiempo in tiempos %}
+          <tr>
+            <td>{{ tiempo.n }}</td>
+            <td>{{ '%.6f' % tiempo.matriz2 }}</td>
+            <td>{{ '%.6f' % tiempo.matriz3 }}</td>
+            <td>{{ '%.6f' % tiempo.matriz4 }}</td>
+            <td>{{ '%.6f' % tiempo.matriz5 }}</td>
+            <td>{{ '%.6f' % tiempo.matriz6 }}</td>
+            <td>{{ '%.6f' % tiempo.matriz7 }}</td>
+            <td>{{ '%.6f' % tiempo.matriz8 }}</td>
+            <td>{{ '%.6f' % tiempo.matriz9 }}</td>
+            <!-- Agrega más columnas para los otros tiempos si es necesario -->
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+{% include 'sitio/pie.html' %}
