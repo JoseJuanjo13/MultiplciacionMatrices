@@ -1,6 +1,7 @@
 import time
-from flask import Flask
-from flask import render_template
+import mysql.connector
+from mysql.connector import errorcode
+from flask import Flask, render_template
 from utils.matrix_operations import matrix_multiply_iterative, generate_random_matrix
 from utils.naivonarray import naiv_on_array
 from utils.naiveloopunrollingtwo import naive_loop_unrolling_two
@@ -23,6 +24,34 @@ with open('numeros.txt', 'r') as archivo:
         lista_de_listas = [[int(numero) for numero in sublista] for sublista in sublistas_de_strings]
         matrices.append(lista_de_listas)
 
+def conectar_base_datos():
+    try:
+        conexion = mysql.connector.connect(
+            user='root',  # Cambia esto por tu usuario de MySQL
+            password='admin',  # Cambia esto por tu contraseña de MySQL
+            host='localhost',
+            database='matrices'  # Cambia esto por el nombre de tu base de datos
+        )
+        return conexion
+    except mysql.connector.Error as error:
+        if error.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            print("Error de acceso: Usuario o contraseña incorrectos")
+        elif error.errno == errorcode.ER_BAD_DB_ERROR:
+            print("Base de datos no existe")
+        else:
+            print(error)
+
+def insertar_tiempo(id_algoritmo, tamano_matriz, tiempo_ejecucion, conexion):
+    try:
+        cursor = conexion.cursor()
+        query = "INSERT INTO Tiempos (id_algoritmo, tamano_matriz, tiempo_ejecucion) VALUES (%s, %s, %s)"
+        datos = (id_algoritmo, tamano_matriz, tiempo_ejecucion)
+        cursor.execute(query, datos)
+        conexion.commit()
+        cursor.close()
+    except mysql.connector.Error as error:
+        print("Error al insertar tiempo:", error)
+
 @app.route('/')
 def inicio():
     return render_template('sitio/index.html')
@@ -40,7 +69,7 @@ def calcular_tiempo(algoritmo, *args):
 @app.route('/resultados')
 def resultados():
     tiempos = []
-
+    conexion = conectar_base_datos()
     lista=[16,32,64,128,256]
 
     for index,n in enumerate(lista): 
@@ -48,20 +77,6 @@ def resultados():
         A = list(matrices[index])
         B = list(matrices[index])
 
-
-        # Multiplicar las matrices
-        # matriz1 = matrix_multiply_iterative(A, B)
-        """
-        matriz2 = naiv_on_array(A, B, len(A), len(A[0]), len(B[0]))
-        matriz3 = naive_loop_unrolling_two(A, B, len(A), len(A[0]), len(B[0]))
-        matriz4 = naive_loop_unrolling_four(A, B, len(A), len(A[0]), len(B[0]))
-        matriz5 = winograd_original(A, B, len(A), len(A[0]), len(B[0]))
-        matriz6 = winograd_scaled(A, B, len(A), len(A[0]), len(B[0]))
-        matriz7 = strassen_naiv(A, B, len(A), len(A[0]), len(B[0]))
-        matriz8 = strassen_winograd(A, B, len(A), len(A[0]), len(B[0]))
-        matriz9 = [[0.0] * len(A) for _ in range(len(A))]
-        sequential_block(matriz9, A, B, len(A), len(A[0]))
-        """
         tiempo_matriz2 = calcular_tiempo(naiv_on_array, A, B, len(A), len(A[0]), len(B[0]))
         tiempo_matriz3 = calcular_tiempo(naive_loop_unrolling_two, A, B, len(A), len(A[0]), len(B[0]))
         tiempo_matriz4 = calcular_tiempo(naive_loop_unrolling_four,A, B, len(A), len(A[0]), len(B[0]))
@@ -71,6 +86,15 @@ def resultados():
         tiempo_matriz8 = calcular_tiempo(strassen_winograd, A, B, len(A), len(A[0]), len(B[0]))
         matriz9 = [[0.0] * len(A) for _ in range(len(A))]
         tiempo_matriz9 = calcular_tiempo(sequential_block, matriz9, A, B, len(A), len(A[0]))
+
+        insertar_tiempo(1, n, tiempo_matriz2, conexion)  # ID 1 corresponde a 'naiv_on_array'
+        insertar_tiempo(2, n, tiempo_matriz3, conexion)  # ID 2 corresponde a 'naive_loop_unrolling_two'
+        insertar_tiempo(3, n, tiempo_matriz4, conexion)  # ID 3 corresponde a 'naive_loop_unrolling_four'
+        insertar_tiempo(4, n, tiempo_matriz5, conexion)  # ID 4 corresponde a 'winograd_original'
+        insertar_tiempo(5, n, tiempo_matriz6, conexion)  # ID 5 corresponde a 'winograd_scaled'
+        insertar_tiempo(6, n, tiempo_matriz7, conexion)  # ID 6 corresponde a 'strassen_naiv'
+        insertar_tiempo(7, n, tiempo_matriz8, conexion)  # ID 7 corresponde a 'strassen_winograd'
+        insertar_tiempo(8, n, tiempo_matriz9, conexion)  # ID 8 corresponde a 'sequential_block'
 
         tiempos.append({
             'n': n,
@@ -83,8 +107,9 @@ def resultados():
             'matriz8': tiempo_matriz8,
             'matriz9': tiempo_matriz9
         })
+      
 
-
+    conexion.close()
     return render_template('sitio/resultados.html', tiempos=tiempos)
 
 if __name__ == '__main__':
