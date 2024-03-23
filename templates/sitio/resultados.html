@@ -8,14 +8,14 @@
         <thead class="thead-dark">
           <tr>
             <th>Tamaño de la Matriz</th>
-            <th>Tiempo (Matriz 2)</th>
-            <th>Tiempo (Matriz 3)</th>
-            <th>Tiempo (Matriz 4)</th>
-            <th>Tiempo (Matriz 5)</th>
-            <th>Tiempo (Matriz 6)</th>
-            <th>Tiempo (Matriz 7)</th>
-            <th>Tiempo (Matriz 8)</th>
-            <th>Tiempo (Matriz 9)</th>
+            <th>naiv_on_array</th>
+            <th>naive_loop_unrolling_two</th>
+            <th>naive_loop_unrolling_four</th>
+            <th>winograd_original</th>
+            <th>winograd_scaled</th>
+            <th>strassen_naiv</th>
+            <th>strassen_winograd</th>
+            <th>sequential_block</th>
             <!-- Agrega más columnas para los otros tiempos si es necesario -->
           </tr>
         </thead>
@@ -37,6 +37,18 @@
         </tbody>
       </table>
     </div>
+
+    <div class="container">
+      <h2 class="mt-4 mb-4">Resultados de la multiplicación de matrices</h2>
+      
+      {% for i, grafico_base64 in graficos_base64 %}
+      <div class="grafico">
+          <h3>Tamaño de la matriz: {{ tiempos[i].n }}</h3>
+          <img src="data:image/png;base64,{{ grafico_base64 }}" alt="Grafico {{ i }}">
+      </div>
+      {% endfor %}
+  </div>
+
   </div>
 
 {% include 'sitio/pie.html' %}
