@@ -49,6 +49,16 @@
       {% endfor %}
   </div>
 
+  <div class="container">
+    <h2 class="mt-4 mb-4">Resultados de la multiplicación de matrices (Promedio)</h2>
+    
+    {% for i, grafico_base64 in calculo_promedio_tiempos %}
+    <div class="grafico">
+        <h3>Tamaño de la matriz: {{ tiempos[i].n }}</h3>
+        <img src="data:image/png;base64,{{ grafico_base64 }}" alt="Grafico {{ i }}">
+    </div>
+    {% endfor %}
+</div>
   </div>
 
 {% include 'sitio/pie.html' %}

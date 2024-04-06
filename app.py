@@ -70,7 +70,60 @@ def calcular_tiempo(algoritmo, *args):
     inicio = time.time()
     algoritmo(*args)
     fin = time.time()
-    return fin - inicio
+    return (fin - inicio) * 1_000_000
+
+def promedio_tiempos():
+
+    conexion = conectar_base_datos()
+    cursor = conexion.cursor()
+
+    lista=[16,32,64,128,256]
+
+    graficos_bytes = []
+
+    nombre_algoritmos = ['naiv_on_array', 'naive_loop_unrolling_two', 'naive_loop_unrolling_four',
+                 'winograd_original', 'winograd_scaled', 'strassen_naiv', 'strassen_winograd', 'sequential_block']
+
+    for i,n in enumerate(lista): 
+        # Resto del código para generar las matrices
+        
+        # Consultar los tiempos registrados en la base de datos para este tamaño de matriz
+        tiempos_por_algoritmo = {}
+        for algoritmo_id in range(1, 9):  # IDs de los algoritmos en la base de datos
+            # Consulta SQL para obtener los tiempos de ejecución para este algoritmo y tamaño de matriz
+            query = "SELECT tiempo_ejecucion FROM Tiempos WHERE id_algoritmo = %s AND tamano_matriz = %s"
+            cursor.execute(query, (algoritmo_id, n))
+            tiempos = cursor.fetchall()
+            tiempos = [tiempo[0] for tiempo in tiempos]  # Convertir la lista de tuplas a lista de valores
+            if tiempos:  # Verificar si se recuperaron tiempos de ejecución
+                promedio_tiempo = sum(tiempos) / len(tiempos)
+            else:
+                promedio_tiempo = None
+            tiempos_por_algoritmo[nombre_algoritmos[algoritmo_id-1]] = promedio_tiempo
+
+        plt.figure(figsize=(10, 6))
+        plt.bar(nombre_algoritmos, [tiempos_por_algoritmo.get(algoritmo, 0) for algoritmo in nombre_algoritmos], color='skyblue')
+        plt.xlabel('Algoritmo')
+        plt.ylabel('Tiempo promedio de ejecución (microsegundos)')
+        plt.title(f'Tiempos promedio de ejecución para tamaño de matriz {n}')
+        plt.xticks(rotation=45, ha='right')
+        plt.tight_layout()
+
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format='png')
+        buffer.seek(0)
+        plt.close()
+        
+        # Convertir el gráfico a formato base64 y añadirlo a la lista
+        grafico_base64 = base64.b64encode(buffer.read()).decode('utf-8')
+        buffer.close()
+        
+        # Guardar el gráfico en el diccionario
+        graficos_bytes.append((i,grafico_base64))
+
+        
+
+    return graficos_bytes
 
 @app.route('/resultados')
 def resultados():
@@ -96,14 +149,14 @@ def resultados():
         matriz9 = [[0.0] * len(A) for _ in range(len(A))]
         tiempo_matriz9 = calcular_tiempo(sequential_block, matriz9, A, B, len(A), len(A[0]))
 
-        insertar_tiempo(1, n, tiempo_matriz2, conexion, fecha_actual)  # ID 1 corresponde a 'naiv_on_array'
-        insertar_tiempo(2, n, tiempo_matriz3, conexion, fecha_actual)  # ID 2 corresponde a 'naive_loop_unrolling_two'
-        insertar_tiempo(3, n, tiempo_matriz4, conexion, fecha_actual)  # ID 3 corresponde a 'naive_loop_unrolling_four'
-        insertar_tiempo(4, n, tiempo_matriz5, conexion, fecha_actual)  # ID 4 corresponde a 'winograd_original'
-        insertar_tiempo(5, n, tiempo_matriz6, conexion, fecha_actual)  # ID 5 corresponde a 'winograd_scaled'
-        insertar_tiempo(6, n, tiempo_matriz7, conexion, fecha_actual)  # ID 6 corresponde a 'strassen_naiv'
-        insertar_tiempo(7, n, tiempo_matriz8, conexion, fecha_actual)  # ID 7 corresponde a 'strassen_winograd'
-        insertar_tiempo(8, n, tiempo_matriz9, conexion, fecha_actual)  # ID 8 corresponde a 'sequential_block'
+        insertar_tiempo(1, n, tiempo_matriz2, conexion, fecha_actual)  
+        insertar_tiempo(2, n, tiempo_matriz3, conexion, fecha_actual)  
+        insertar_tiempo(3, n, tiempo_matriz4, conexion, fecha_actual)  
+        insertar_tiempo(4, n, tiempo_matriz5, conexion, fecha_actual)  
+        insertar_tiempo(5, n, tiempo_matriz6, conexion, fecha_actual)  
+        insertar_tiempo(6, n, tiempo_matriz7, conexion, fecha_actual)  
+        insertar_tiempo(7, n, tiempo_matriz8, conexion, fecha_actual)  
+        insertar_tiempo(8, n, tiempo_matriz9, conexion, fecha_actual)  
 
         tiempos.append({
             'n': n,
@@ -124,7 +177,7 @@ def resultados():
                 [tiempo_matriz2, tiempo_matriz3, tiempo_matriz4, tiempo_matriz5, tiempo_matriz6, tiempo_matriz7, tiempo_matriz8, tiempo_matriz9],
                 color='skyblue')
         plt.xlabel('Algoritmo')
-        plt.ylabel('Tiempo de ejecución (segundos)')
+        plt.ylabel('Tiempo de ejecución (microsegundos)')
         plt.title(f'Tiempos de ejecución para tamaño de matriz {n}')
         plt.xticks(rotation=45, ha='right')
         
@@ -139,11 +192,11 @@ def resultados():
         buffer.close()
         graficos_base64.append(grafico_base64)
 
+    calculo_promedio_tiempos = promedio_tiempos()
 
     graficos_base64 = [(i, grafico_base64) for i, grafico_base64 in enumerate(graficos_base64)]
     conexion.close()
-    return render_template('sitio/resultados.html', tiempos=tiempos, graficos_base64=graficos_base64)
-
+    return render_template('sitio/resultados.html', tiempos=tiempos, graficos_base64=graficos_base64, calculo_promedio_tiempos=calculo_promedio_tiempos)
 
 
 if __name__ == '__main__':
