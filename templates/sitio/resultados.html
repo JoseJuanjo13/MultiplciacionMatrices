@@ -16,6 +16,8 @@
             <th>strassen_naiv</th>
             <th>strassen_winograd</th>
             <th>sequential_block</th>
+            <th>parallel_block</th>
+            <th>enhanced_parallel_block</th>
             <!-- Agrega más columnas para los otros tiempos si es necesario -->
           </tr>
         </thead>
@@ -31,6 +33,8 @@
             <td>{{ '%.6f' % tiempo.matriz7 }}</td>
             <td>{{ '%.6f' % tiempo.matriz8 }}</td>
             <td>{{ '%.6f' % tiempo.matriz9 }}</td>
+            <td>{{ '%.6f' % tiempo.matriz10 }}</td>
+            <td>{{ '%.6f' % tiempo.matriz11 }}</td>
             <!-- Agrega más columnas para los otros tiempos si es necesario -->
           </tr>
           {% endfor %}
