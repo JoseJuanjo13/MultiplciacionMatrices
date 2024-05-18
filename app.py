@@ -23,6 +23,7 @@ from utils.parallel_block_iv4 import parallel_block_iv4
 from utils.enhanced_parallel_block_iv5 import enhanced_parallel_block_iv5
 from utils.sequential_block_v3 import sequential_block_v3
 from utils.parallel_block_v4 import parallel_block_v4
+from utils.parallel_block_iii_4 import parallel_block_iii_4
 
 app=Flask(__name__)
 
@@ -89,14 +90,15 @@ def promedio_tiempos():
 
     nombre_algoritmos = ['naiv_on_array', 'naive_loop_unrolling_two', 'naive_loop_unrolling_four',
                  'winograd_original', 'winograd_scaled', 'strassen_naiv', 'strassen_winograd', 'sequential_block',
-                   'parallel_block', 'enhanced_parallel_block', 'parallel_block_iv4', 'enhanced_parallel_block_iv5','sequential_block_v3','parallel_block_v4']
+                   'parallel_block', 'enhanced_parallel_block', 'parallel_block_iv4', 'enhanced_parallel_block_iv5',
+                   'sequential_block_v3','parallel_block_v4','parallel_block_iii_4']
 
     for i,n in enumerate(lista): 
         # Resto del código para generar las matrices
         
         # Consultar los tiempos registrados en la base de datos para este tamaño de matriz
         tiempos_por_algoritmo = {}
-        for algoritmo_id in range(1, 14):  # IDs de los algoritmos en la base de datos
+        for algoritmo_id in range(1, 15):  # IDs de los algoritmos en la base de datos
             # Consulta SQL para obtener los tiempos de ejecución para este algoritmo y tamaño de matriz
             query = "SELECT tiempo_ejecucion FROM Tiempos WHERE id_algoritmo = %s AND tamano_matriz = %s"
             cursor.execute(query, (algoritmo_id, n))
@@ -161,6 +163,7 @@ def resultados():
         tiempo_matriz13 = calcular_tiempo(enhanced_parallel_block_iv5, A, B, len(A))
         tiempo_matriz14 = calcular_tiempo(sequential_block_v3, A, B, len(A))
         tiempo_matriz15 = calcular_tiempo(parallel_block_v4, A, B, len(A))
+        tiempo_matriz16 = calcular_tiempo(parallel_block_iii_4, A, B, len(A))
 
         insertar_tiempo(1, n, tiempo_matriz2, conexion, fecha_actual)  
         insertar_tiempo(2, n, tiempo_matriz3, conexion, fecha_actual)  
@@ -176,6 +179,7 @@ def resultados():
         insertar_tiempo(12, n, tiempo_matriz13, conexion, fecha_actual)
         insertar_tiempo(13, n, tiempo_matriz14, conexion, fecha_actual)
         insertar_tiempo(14, n, tiempo_matriz15, conexion, fecha_actual)
+        insertar_tiempo(15, n, tiempo_matriz16, conexion, fecha_actual)
 
         tiempos.append({
             'n': n,
@@ -192,16 +196,17 @@ def resultados():
             'matriz12': tiempo_matriz12,
             'matriz13': tiempo_matriz13,
             'matriz14': tiempo_matriz14,
-            'matriz15': tiempo_matriz15
+            'matriz15': tiempo_matriz15,
+            'matriz16': tiempo_matriz16
         })
 
         # Generar el gráfico y guardarlo en un buffer
         plt.figure(figsize=(10, 6))
         plt.bar(['naiv_on_array', 'naive_loop_unrolling_two', 'naive_loop_unrolling_four',
                  'winograd_original', 'winograd_scaled', 'strassen_naiv', 'strassen_winograd', 'sequential_block', 
-                 'parallel_block', 'enhanced_parallel_block', 'parallel_block_iv4', 'enhanced_parallel_block_iv5','sequential_block_v3','parallel_block_v4'],
+                 'parallel_block', 'enhanced_parallel_block', 'parallel_block_iv4', 'enhanced_parallel_block_iv5','sequential_block_v3','parallel_block_v4', 'parallel_block_iii_4'],
                 [tiempo_matriz2, tiempo_matriz3, tiempo_matriz4, tiempo_matriz5, tiempo_matriz6, tiempo_matriz7,
-                  tiempo_matriz8, tiempo_matriz9, tiempo_matriz10, tiempo_matriz11, tiempo_matriz12, tiempo_matriz13, tiempo_matriz14, tiempo_matriz15],
+                  tiempo_matriz8, tiempo_matriz9, tiempo_matriz10, tiempo_matriz11, tiempo_matriz12, tiempo_matriz13, tiempo_matriz14, tiempo_matriz15, tiempo_matriz16],
                 color='skyblue')
         plt.xlabel('Algoritmo')
         plt.ylabel('Tiempo de ejecución (microsegundos)')
