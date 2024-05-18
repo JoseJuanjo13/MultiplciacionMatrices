@@ -84,7 +84,7 @@ def promedio_tiempos():
     conexion = conectar_base_datos()
     cursor = conexion.cursor()
 
-    lista=[16,32,64,128,256]
+    lista=[8,16,32,64,128,256]
 
     graficos_bytes = []
 
@@ -138,7 +138,7 @@ def promedio_tiempos():
 def resultados():
     tiempos = []
     conexion = conectar_base_datos()
-    lista=[16,32,64,128,256]
+    lista=[8,16,32,64,128,256]
 
     graficos_base64 = []
 
